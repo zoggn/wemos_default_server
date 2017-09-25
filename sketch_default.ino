@@ -1,16 +1,18 @@
 #define _ssid "EspD1mini_00"
 
 // ESP-8266MOD D1 mini
-#define _RfLed 2 // On-LOW, Off-HIGH 
+#define _RfLed 2// On-LOW, Off-HIGH 
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 ESP8266WebServer server(80);
 
 boolean RfLed;
+boolean BfBlink;
 
 String formHTML(){
   String vRf; if (RfLed) vRf="Off"; else vRf="On";
+  String vBf; if (BfBlink) vBf="Off"; else vBf="On";
   String vTime=String(millis()/1000,DEC);
 
   String form =""
@@ -40,6 +42,7 @@ String formHTML(){
   "Run time is " + vTime + " seconds\n" 
   "<form action='act' align=center>\n"
   "RF-Led: <button name='Rf' value='"+vRf+"'>"+vRf+"</button>\n"
+  "BF-Blink: <button name='Bf' value='"+vBf+"'>"+vBf+"</button>\n"
   "<input type=text id=ct1>\n"
   "<input type=button id=bt1 value='Start' onClick=setTimer1()>\n"
   "</form>\n"
@@ -55,7 +58,9 @@ void handle_root() {
 
 void handle_act() {
   RfLed=(server.arg("Rf")=="On");
-  setRfLed(RfLed); 
+  setRfLed(RfLed);
+  BfBlink=(server.arg("Bf")=="Off");
+  setBfBlink(BfBlink); 
   server.send(200,"text/html",formHTML());
   Serial.println("handle_act");
 }//handle_led
@@ -66,6 +71,7 @@ void setup(void) {
 
   pinMode(_RfLed,OUTPUT); 
   setRfLed(0);
+  setBfBlink(0);
 
   //This needs only at first time to disable Station mode
   //WiFi.mode(WIFI_STA); WiFi.disconnect(); //Disable Station Mode
@@ -89,3 +95,13 @@ void setRfLed(boolean LedOn){
   if (LedOn) digitalWrite(_RfLed,LOW); 
   else digitalWrite(_RfLed,HIGH); 
 }//setRfLed
+
+void setBfBlink(boolean BlinkOn){
+  while(BlinkOn)
+  {
+  digitalWrite(_RfLed,LOW);
+  delay(1000);
+  digitalWrite(_RfLed,HIGH);
+  delay(1000);
+  } 
+}
